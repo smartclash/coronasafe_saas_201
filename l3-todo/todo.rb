@@ -1,14 +1,30 @@
 require "date"
 
 class Todo
-  # ..
-  # ..
-  # FILL YOUR CODE HERE
-  # ..
-  # ..
+  def initialize(todo, due, completed)
+    @todo = todo
+    @due = due
+    @completed = completed
+  end
+
+  def overdue?
+    @due < Date.today
+  end
+
+  def due_today?
+    @due == Date.today
+  end
+
+  def due_later?
+    @due > Date.today
+  end
+
+  def checker
+    @completed ? "[X]" : "[ ]"
+  end
 
   def to_displayable_string
-    # FILL YOUR CODE HERE
+    due_today? ? "#{checker} #{@todo}" : "#{checker} #{@todo} #{@due}"
   end
 end
 
@@ -21,14 +37,22 @@ class TodosList
     TodosList.new(@todos.filter { |todo| todo.overdue? })
   end  
 
-  # ..
-  # ..
-  # FILL YOUR CODE HERE
-  # ..
-  # ..
+  def due_today
+    TodosList.new(@todos.filter { |todo| todo.due_today? })
+  end
+
+  def due_later
+    TodosList.new(@todos.filter { |todo| todo.due_later? })
+  end
+
+  def add(todo)
+    @todos.push(todo)
+  end
 
   def to_displayable_list
-    # FILL YOUR CODE HERE
+    todo_display = []
+    @todos.each {|todo| todo_display.push(todo.to_displayable_string)}
+    todo_display.join("\n")
   end
 end
 
