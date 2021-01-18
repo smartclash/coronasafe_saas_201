@@ -16,41 +16,27 @@ domain = get_command_line_argument
 dns_raw = File.readlines("zone")
 
 def resolve(dns_records, lookup_chain, domain)
-    dns_records[:cname].each do |cname_record|
-        if cname_record[domain] != nil
-            lookup_chain.push(cname_record[domain])
-            return resolve(dns_records, lookup_chain, cname_record[domain])
-        end
-    end
+    record = dns_records[domain]
 
-    dns_records[:a].each do |a_record|
-        if a_record[domain] != nil
-            lookup_chain.push(a_record[domain])
-            return lookup_chain
-        end
+    if !record
+        return ["Error: record not found for #{domain}"]
+    elsif record[:type] == 'CNAME'
+        lookup_chain.push(record[:target])
+        return resolve(dns_records, lookup_chain, record[:target])
+    elsif record[:type] == 'A'
+        return lookup_chain.push(record[:target])
     end
-
-    ["Error: record not found for #{domain}"]
 end
 
 def parse_dns(dns_raw)
-    parsed_dns = []
-    dns_hash = { :a => [], :cname => [] }
+    dns_hash = {}
 
-    dns_raw.each do |entry| 
-        cleaned_entry = entry.chomp
-        split_string = cleaned_entry.split('')
+    dns_raw.reject {|item| item.split().first == '#'}
+        .reject {|item| item.split().length <= 0}
+        .map {|item| item.strip.split(', ')}
+        .each {|item| dns_hash[item[1]] = { :type => item[0], :target => item[2] }}
 
-        next if split_string.first === '#' || split_string.length <= 0
-        split_entry = cleaned_entry.split(', ')
-        parsed_dns.push(split_entry)
-    end
-
-    parsed_dns.each do |dns| 
-        dns_hash[dns.first.downcase.to_sym].push({ dns[1] => dns[2] })
-    end
-
-    return dns_hash
+    dns_hash
 end
 
 # To complete the assignment, implement `parse_dns` and `resolve`.
