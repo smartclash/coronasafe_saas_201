@@ -1,4 +1,4 @@
-require 'connect_db.rb'
+require './connect_db.rb'
 require './todo.rb'
 
 def get_new_todo
